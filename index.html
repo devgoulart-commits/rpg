@@ -1,0 +1,163 @@
+sim me dar um site pronto
+
+Perfeito 😄 então aqui vai UM SITE DE RPG PRONTO, completo, copiar → colar → subir no S3.
+Ele já tem:
+
+✅ Interface
+✅ Escolha de classe
+✅ Vida / nível
+✅ Salvar progresso (AWS)
+✅ Carregar progresso (AWS)
+
+🎮 SITE RPG PRONTO (index.html)
+
+⚠️ Só precisa trocar as URLs da API (SALVAR_URL e CARREGAR_URL)
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Lendas de Eldoria</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(#141e30, #243b55);
+    color: #fff;
+}
+
+header {
+    text-align: center;
+    padding: 30px;
+    background: rgba(0,0,0,0.6);
+}
+
+section {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card {
+    background: rgba(0,0,0,0.6);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #f1c40f;
+    color: #000;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #f39c12;
+}
+
+.status {
+    margin-top: 10px;
+    font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🗡️ Lendas de Eldoria</h1>
+    <p>RPG Web com progresso salvo na AWS</p>
+</header>
+
+<section>
+
+<div class="card">
+    <h2>👤 Personagem</h2>
+    <p>Classe: <span id="classe">Nenhuma</span></p>
+    <p>Nível: <span id="nivel">1</span></p>
+    <p>Vida: <span id="vida">100</span></p>
+
+    <button onclick="escolherClasse('Guerreiro')">⚔️ Guerreiro</button>
+    <button onclick="escolherClasse('Mago')">🔮 Mago</button>
+    <button onclick="escolherClasse('Arqueiro')">🏹 Arqueiro</button>
+</div>
+
+<div class="card">
+    <h2>💾 Progresso</h2>
+    <button onclick="salvar()">Salvar Progresso</button>
+    <button onclick="carregar()">Carregar Progresso</button>
+    <p class="status" id="status"></p>
+</div>
+
+</section>
+
+<script>
+const jogadorId = "player001";
+
+// 🔴 TROQUE PELAS SUAS URLs DA AWS
+const SALVAR_URL = "https://SUA_API/salvar";
+const CARREGAR_URL = "https://SUA_API/carregar";
+
+let personagem = {
+    classe: "Nenhuma",
+    nivel: 1,
+    vida: 100
+};
+
+function atualizarTela() {
+    document.getElementById("classe").innerText = personagem.classe;
+    document.getElementById("nivel").innerText = personagem.nivel;
+    document.getElementById("vida").innerText = personagem.vida;
+}
+
+function escolherClasse(classe) {
+    personagem.classe = classe;
+    document.getElementById("status").innerText =
+        "Classe escolhida: " + classe;
+    atualizarTela();
+}
+
+async function salvar() {
+    await fetch(SALVAR_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            jogadorId,
+            ...personagem
+        })
+    });
+
+    document.getElementById("status").innerText =
+        "✅ Progresso salvo!";
+}
+
+async function carregar() {
+    const resposta = await fetch(CARREGAR_URL + "?jogadorId=" + jogadorId);
+    const dados = await resposta.json();
+
+    if (dados.Item) {
+        personagem = {
+            classe: dados.Item.classe,
+            nivel: dados.Item.nivel,
+            vida: dados.Item.vida
+        };
+        atualizarTela();
+        document.getElementById("status").innerText =
+            "📥 Progresso carregado!";
+    } else {
+        document.getElementById("status").innerText =
+            "⚠️ Nenhum progresso encontrado";
+    }
+}
+
+atualizarTela();
+</script>
+
+</body>
+</html>
